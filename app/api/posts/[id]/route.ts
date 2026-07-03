@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -38,6 +39,7 @@ export async function PATCH(
       ...(body.category && { category: { connect: { slug: body.category } } }),
     },
   });
+  revalidateTag("posts");
   return NextResponse.json(post);
 }
 
@@ -51,5 +53,6 @@ export async function DELETE(
   }
 
   await prisma.post.delete({ where: { id: params.id } });
+  revalidateTag("posts");
   return NextResponse.json({ ok: true });
 }

@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import ConstellationBackground from "@/components/ConstellationBackground";
 import CategoryCard from "@/components/CategoryCard";
 import { prisma } from "@/lib/prisma";
@@ -11,17 +12,23 @@ const DESCRIPTIONS: Record<string, string> = {
   web: "웹 페이지, 프론트엔드 작업",
 };
 
-async function getCategories() {
-  const categories = await prisma.category.findMany({
-    orderBy: { order: "asc" },
-  });
-  return categories.map((c) => ({
-    slug: c.slug,
-    label: c.label,
-    ko: c.label,
-    desc: DESCRIPTIONS[c.slug] ?? "선택한 작업물 모음",
-  }));
-}
+// Cached so navigating home doesn't hit the DB every time. Busted whenever a
+// category is added/removed via revalidateTag("categories").
+const getCategories = unstable_cache(
+  async () => {
+    const categories = await prisma.category.findMany({
+      orderBy: { order: "asc" },
+    });
+    return categories.map((c) => ({
+      slug: c.slug,
+      label: c.label,
+      ko: c.label,
+      desc: DESCRIPTIONS[c.slug] ?? "선택한 작업물 모음",
+    }));
+  },
+  ["home-categories"],
+  { tags: ["categories"] }
+);
 
 export default async function HomePage() {
   const categories = await getCategories();

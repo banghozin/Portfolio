@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -25,5 +26,6 @@ export async function POST(req: Request) {
   const category = await prisma.category.create({
     data: { slug: body.slug, label: body.label, order: count },
   });
+  revalidateTag("categories");
   return NextResponse.json(category, { status: 201 });
 }

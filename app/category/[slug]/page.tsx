@@ -1,30 +1,40 @@
+import { unstable_cache } from "next/cache";
 import PostCard from "@/components/PostCard";
 import { prisma } from "@/lib/prisma";
 
-async function getCategoryWithPosts(slug: string) {
-  return prisma.category.findUnique({
-    where: { slug },
-    include: { posts: { orderBy: { createdAt: "desc" } } },
-  });
-}
-
-function formatDate(d: Date) {
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
+// Cached per slug; Date is formatted to a string inside so the cached value is
+// plain JSON. Busted on any post/category change via revalidateTag.
+const getCategoryData = unstable_cache(
+  async (slug: string) => {
+    const category = await prisma.category.findUnique({
+      where: { slug },
+      include: { posts: { orderBy: { createdAt: "desc" } } },
+    });
+    if (!category) return null;
+    return {
+      label: category.label,
+      posts: category.posts.map((p) => ({
+        id: p.id,
+        title: p.title,
+        thumbnail: p.thumbnail || "/placeholder-thumb.jpg",
+        excerpt: p.content.slice(0, 80),
+        date: `${p.createdAt.getFullYear()}.${String(
+          p.createdAt.getMonth() + 1
+        ).padStart(2, "0")}`,
+      })),
+    };
+  },
+  ["category-data"],
+  { tags: ["categories", "posts"] }
+);
 
 export default async function CategoryPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const category = await getCategoryWithPosts(params.slug);
-  const posts = (category?.posts ?? []).map((p) => ({
-    id: p.id,
-    title: p.title,
-    thumbnail: p.thumbnail || "/placeholder-thumb.jpg",
-    excerpt: p.content.slice(0, 80),
-    date: formatDate(p.createdAt),
-  }));
+  const category = await getCategoryData(params.slug);
+  const posts = category?.posts ?? [];
   const label = category?.label ?? params.slug;
 
   return (

@@ -1,24 +1,30 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import PostGallery from "@/components/PostGallery";
 
-async function getPost(id: string) {
-  const post = await prisma.post.findUnique({ where: { id } });
-  if (!post) return null;
-  return {
-    id: post.id,
-    title: post.title,
-    date: `${post.createdAt.getFullYear()}.${String(
-      post.createdAt.getMonth() + 1
-    ).padStart(2, "0")}`,
-    content: post.content,
-    images: post.images,
-    youtubeUrl: post.youtubeUrl ?? "",
-  };
-}
+// Cached per id; busted on any post change via revalidateTag("posts").
+const getPost = unstable_cache(
+  async (id: string) => {
+    const post = await prisma.post.findUnique({ where: { id } });
+    if (!post) return null;
+    return {
+      id: post.id,
+      title: post.title,
+      date: `${post.createdAt.getFullYear()}.${String(
+        post.createdAt.getMonth() + 1
+      ).padStart(2, "0")}`,
+      content: post.content,
+      images: post.images,
+      youtubeUrl: post.youtubeUrl ?? "",
+    };
+  },
+  ["post"],
+  { tags: ["posts"] }
+);
 
 function getYoutubeEmbedId(url: string) {
   const match = url.match(
