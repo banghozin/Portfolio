@@ -8,6 +8,17 @@ import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 // 4.5MB request-body limit that Vercel serverless functions impose, so large
 // phone photos upload fine. BLOB_READ_WRITE_TOKEN must be set on the project
 // (Storage tab → Connect Blob store) for token generation to work.
+// TEMP diagnostic: reports which blob credentials exist at runtime (booleans
+// only, no secret values). Remove once upload is confirmed working.
+export async function GET(): Promise<NextResponse> {
+  return NextResponse.json({
+    vercelEnv: process.env.VERCEL_ENV ?? null,
+    hasStoreId: !!process.env.BLOB_STORE_ID,
+    hasOidcToken: !!process.env.VERCEL_OIDC_TOKEN,
+    hasReadWriteToken: !!process.env.BLOB_READ_WRITE_TOKEN,
+  });
+}
+
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadBody;
 
