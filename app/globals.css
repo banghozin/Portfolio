@@ -1,0 +1,60 @@
+/* Pretendard — Korean body/UI face, self-hosted via CDN (no Google Fonts variant exists) */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-pretendard: "PretendardVariable", -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0b0e1a;
+  color: #f2f0e9;
+  font-family: var(--font-pretendard);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* visible keyboard focus, never remove outline entirely */
+:focus-visible {
+  outline: 2px solid #e8b95c;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: #e8b95c;
+  color: #0b0e1a;
+}
+
+/* thin custom scrollbar to match the night-sky feel */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0e1a;
+}
+::-webkit-scrollbar-thumb {
+  background: #1b2040;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Vercel Postgres, Supabase, Neon 등
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  label     String
+  order     Int      @default(0)
+  posts     Post[]
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id         String   @id @default(cuid())
+  title      String
+  content    String
+  images     String[] // uploaded image URLs
+  thumbnail  String? // chosen from `images`
+  youtubeUrl String?
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
