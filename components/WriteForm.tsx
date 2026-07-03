@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { upload } from "@vercel/blob/client";
 
 type Category = { slug: string; label: string };
 
@@ -36,14 +37,15 @@ export default function WriteForm() {
     const uploaded: string[] = [];
     const failed: string[] = [];
     for (const file of Array.from(files)) {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: form });
-      if (res.ok) {
-        const { url } = await res.json();
-        uploaded.push(url);
-      } else {
-        failed.push(file.name);
+      try {
+        // Upload straight from the browser to Vercel Blob (no 4.5MB limit).
+        const blob = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+        uploaded.push(blob.url);
+      } catch (err) {
+        failed.push(`${file.name} (${(err as Error).message})`);
       }
     }
     setImages((prev) => [...prev, ...uploaded]);
