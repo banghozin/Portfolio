@@ -18,15 +18,29 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Production (Vercel): store in Vercel Blob.
+    // Production (Vercel): store in Vercel Blob. Vercel Blob storage must be
+    // added to the project (Storage tab) for BLOB_READ_WRITE_TOKEN to exist.
     if (process.env.BLOB_READ_WRITE_TOKEN) {
       const blob = await put(file.name, file, { access: "public" });
       return NextResponse.json({ url: blob.url });
     }
 
-    // Local dev fallback: no Blob token configured yet, so write straight
-    // to /public/uploads instead of failing silently. Swap this out once
-    // BLOB_READ_WRITE_TOKEN is set (e.g. via `vercel env pull`).
+    // On Vercel with no Blob token configured, writing to the local
+    // filesystem would silently "succeed" but the file won't actually be
+    // servable afterward (serverless filesystem isn't persistent/shared).
+    // Fail clearly instead of producing a broken image.
+    if (process.env.VERCEL) {
+      return NextResponse.json(
+        {
+          error:
+            "이미지 저장소가 아직 연결되지 않았어요. Vercel 프로젝트의 Storage 탭에서 Blob을 추가해주세요.",
+        },
+        { status: 500 }
+      );
+    }
+
+    // Local dev fallback only: no Blob token configured yet, so write
+    // straight to /public/uploads instead of failing.
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
     await mkdir(uploadsDir, { recursive: true });
 

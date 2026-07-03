@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Vercel Postgres, Supabase, Neon 등
-  url      = env("DATABASE_URL")
+  provider  = "postgresql" // Vercel Postgres, Supabase, Neon 등
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Category {

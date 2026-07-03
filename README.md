@@ -34,8 +34,19 @@ npm run dev
 ### DATABASE_URL은 어디서 받나요?
 
 로컬에서 제일 빠른 방법은 무료 Postgres 호스팅(Neon, Supabase 중 하나)을 쓰는 거예요.
-1. [neon.tech](https://neon.tech) 가입 → 프로젝트 생성 → Connection string 복사
-2. `.env`의 `DATABASE_URL`에 붙여넣기 (`?sslmode=require`가 붙어있는지 확인)
+1. [neon.tech](https://neon.tech) 가입 → 프로젝트 생성
+2. Neon 대시보드에 호스트가 두 개 보여요:
+   - `ep-xxxx.aws.neon.tech` (일반 연결)
+   - `ep-xxxx-pooler.aws.neon.tech` (**pooler** 연결)
+3. `.env`에 이렇게 나눠서 넣으세요:
+   ```
+   DATABASE_URL="postgresql://[Role]:[Password]@ep-xxxx-pooler.aws.neon.tech/neondb?sslmode=require"
+   DIRECT_URL="postgresql://[Role]:[Password]@ep-xxxx.aws.neon.tech/neondb?sslmode=require"
+   ```
+
+**왜 두 개로 나누나요?** `DATABASE_URL`(pooler)은 실제 페이지 요청마다 쓰이는 연결이고, Vercel처럼 서버리스 환경에서는 요청마다 새 연결을 맺기 때문에 pooler가 아니면 매번 1~2초씩 느려져요. `DIRECT_URL`은 스키마를 바꾸는 마이그레이션 때만 쓰여서 pooler가 필요 없어요 (오히려 pooler로 마이그레이션하면 에러가 날 수 있어요).
+
+Vercel Environment Variables에도 **`DATABASE_URL`, `DIRECT_URL` 둘 다** 넣어주세요. 지금까지 pooler 없이 `DATABASE_URL` 하나만 쓰고 계셨다면, 이게 "버튼 눌렀는데 1~2초 뒤에 반응하는" 느린 속도의 원인이었을 거예요.
 
 배포할 때는 Vercel Postgres를 새로 만들면 이 값이 자동으로 채워지니, 로컬용과
 프로덕션용을 다른 DB로 둬도 괜찮아요.
@@ -146,9 +157,9 @@ app/
   category/[slug]/page.tsx        카테고리별 게시글 그리드 (DB 조회)
   post/[id]/page.tsx              게시글 상세 (DB 조회)
   admin/page.tsx                  로그인 게이트
-  admin/write/page.tsx            글쓰기 폼 (카테고리 동적 로드)
-  admin/edit/[id]/page.tsx        글 수정/삭제 폼
-  admin/categories/page.tsx       카테고리 추가/삭제 UI
+  admin/write/page.tsx             글쓰기 (서버에서 로그인 확인 후 WriteForm 렌더)
+  admin/edit/[id]/page.tsx         글 수정 (서버에서 로그인 확인 후 EditForm 렌더)
+  admin/categories/page.tsx        카테고리 관리 (서버에서 로그인 확인 후 CategoriesManager 렌더)
   api/auth/[...nextauth]/         NextAuth 핸들러
   api/posts/route.ts              게시글 목록/생성
   api/posts/[id]/route.ts         게시글 조회/수정/삭제
