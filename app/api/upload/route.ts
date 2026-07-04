@@ -3,17 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { put } from "@vercel/blob";
 
-// TEMP diagnostic: reports which blob credentials exist at runtime (booleans
-// only, no secret values). Remove once upload is confirmed working.
-export async function GET(): Promise<NextResponse> {
-  return NextResponse.json({
-    vercelEnv: process.env.VERCEL_ENV ?? null,
-    hasStoreId: !!process.env.BLOB_STORE_ID,
-    hasOidcToken: !!process.env.VERCEL_OIDC_TOKEN,
-    hasReadWriteToken: !!process.env.BLOB_READ_WRITE_TOKEN,
-  });
-}
-
 // Server-side upload to Vercel Blob. The client downscales images first so
 // they fit under the 4.5MB serverless body limit. addRandomSuffix avoids
 // filename collisions (and handles unicode/space filenames safely).
