@@ -3,7 +3,7 @@ import { revalidateTag } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { asBlocks, plainTextFromBlocks, firstImageUrl } from "@/lib/blocks";
+import { asBlocks, plainTextFromBlocks, resolveThumbnail } from "@/lib/blocks";
 
 export async function GET(
   _req: Request,
@@ -36,7 +36,7 @@ export async function PATCH(
       title: body.title,
       content: plainTextFromBlocks(blocks),
       blocks,
-      thumbnail: firstImageUrl(blocks),
+      thumbnail: resolveThumbnail(blocks, body.thumbnail),
       ...(body.category && { category: { connect: { slug: body.category } } }),
     },
   });

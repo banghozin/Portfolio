@@ -29,9 +29,13 @@ function emptyBlock(type: BlockType): Block {
 export default function BlockEditor({
   blocks,
   onChange,
+  thumbnail,
+  onThumbnailChange,
 }: {
   blocks: Block[];
   onChange: (blocks: Block[]) => void;
+  thumbnail: string | null;
+  onThumbnailChange: (url: string) => void;
 }) {
   const [uploadingAt, setUploadingAt] = useState<number | null>(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -187,6 +191,19 @@ export default function BlockEditor({
                   className="max-h-72 w-full rounded-lg object-contain"
                 />
               ) : null}
+              {b.url && (
+                <button
+                  type="button"
+                  onClick={() => onThumbnailChange(b.url)}
+                  className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1 font-mono text-[11px] transition-colors ${
+                    thumbnail === b.url
+                      ? "border-gold bg-gold/10 text-gold"
+                      : "border-line text-text-muted hover:border-gold hover:text-gold"
+                  }`}
+                >
+                  {thumbnail === b.url ? "★ 대표 썸네일" : "☆ 썸네일로 지정"}
+                </button>
+              )}
               <input
                 type="file"
                 accept="image/*"

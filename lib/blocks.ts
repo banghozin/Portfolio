@@ -25,11 +25,26 @@ export function plainTextFromBlocks(blocks: Block[]): string {
     .trim();
 }
 
+export function imageUrls(blocks: Block[]): string[] {
+  return blocks
+    .filter((b): b is Extract<Block, { type: "image" }> => b.type === "image")
+    .map((b) => b.url)
+    .filter(Boolean);
+}
+
 export function firstImageUrl(blocks: Block[]): string | null {
-  const img = blocks.find(
-    (b): b is Extract<Block, { type: "image" }> => b.type === "image"
-  );
-  return img ? img.url : null;
+  return imageUrls(blocks)[0] ?? null;
+}
+
+// The chosen thumbnail, if it's still one of the post's images; otherwise the
+// first image. Falls back to null when there are no images.
+export function resolveThumbnail(
+  blocks: Block[],
+  preferred?: string | null
+): string | null {
+  const imgs = imageUrls(blocks);
+  if (preferred && imgs.includes(preferred)) return preferred;
+  return imgs[0] ?? null;
 }
 
 // Normalize an unknown JSON value into a Block[] (defensive on read).

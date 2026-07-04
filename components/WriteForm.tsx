@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Block } from "@/lib/blocks";
+import { Block, resolveThumbnail } from "@/lib/blocks";
 import BlockEditor from "@/components/BlockEditor";
 
 type Category = { slug: string; label: string };
@@ -11,6 +11,7 @@ export default function WriteForm() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [blocks, setBlocks] = useState<Block[]>([]);
+  const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">(
     "idle"
   );
@@ -30,7 +31,7 @@ export default function WriteForm() {
     const res = await fetch("/api/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, category, blocks }),
+      body: JSON.stringify({ title, category, blocks, thumbnail }),
     });
 
     if (!res.ok) {
@@ -85,7 +86,12 @@ export default function WriteForm() {
         </Field>
 
         <Field label="내용">
-          <BlockEditor blocks={blocks} onChange={setBlocks} />
+          <BlockEditor
+            blocks={blocks}
+            onChange={setBlocks}
+            thumbnail={resolveThumbnail(blocks, thumbnail)}
+            onThumbnailChange={setThumbnail}
+          />
         </Field>
 
         <button
