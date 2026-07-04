@@ -1,13 +1,19 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
 // Safe markdown renderer (raw HTML is not enabled). Styled to match the
 // site palette so headings/bold/lists/links look right in posts and preview.
+// remark-breaks makes a single Enter a line break (what most people expect).
 export default function Markdown({ children }: { children: string }) {
+  // A 4-digit year + period at line start (e.g. "2023. 03") would otherwise be
+  // parsed as an ordered-list item and indented. Escape it so it renders as
+  // plain text; ordinary "1." / "2." lists still work.
+  const src = children.replace(/^(\s*)(\d{4})\.(\s)/gm, "$1$2\\.$3");
   return (
     <div className="space-y-4 break-words font-body text-base leading-relaxed text-text-muted">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
         components={{
           h1: (props) => (
             <h1 className="mt-2 font-display text-3xl text-text" {...props} />
@@ -52,7 +58,7 @@ export default function Markdown({ children }: { children: string }) {
           hr: () => <hr className="border-line" />,
         }}
       >
-        {children}
+        {src}
       </ReactMarkdown>
     </div>
   );
