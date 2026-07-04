@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { upload } from "@vercel/blob/client";
+import { downscaleImage } from "@/lib/downscaleImage";
 
 type Category = { slug: string; label: string };
 
@@ -47,12 +47,17 @@ export default function EditForm({ id }: { id: string }) {
     const failed: string[] = [];
     for (const file of Array.from(files)) {
       try {
-        // Upload straight from the browser to Vercel Blob (no 4.5MB limit).
-        const blob = await upload(file.name, file, {
-          access: "public",
-          handleUploadUrl: "/api/upload",
-        });
-        uploaded.push(blob.url);
+        // Shrink big images in the browser, then upload via our server route.
+        const resized = await downscaleImage(file);
+        const form = new FormData();
+        form.append("file", resized);
+        const res = await fetch("/api/upload", { method: "POST", body: form });
+        if (!res.ok) {
+          const { error } = await res.json().catch(() => ({ error: res.statusText }));
+          throw new Error(error || "업로드 실패");
+        }
+        const { url } = await res.json();
+        uploaded.push(url);
       } catch (err) {
         failed.push(`${file.name} (${(err as Error).message})`);
       }

@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import { put } from "@vercel/blob";
 
-// Client-side upload flow: the browser uploads the file straight to Vercel
-// Blob and only asks this route for a short-lived token. This bypasses the
-// 4.5MB request-body limit that Vercel serverless functions impose, so large
-// phone photos upload fine. BLOB_READ_WRITE_TOKEN must be set on the project
-// (Storage tab → Connect Blob store) for token generation to work.
 // TEMP diagnostic: reports which blob credentials exist at runtime (booleans
 // only, no secret values). Remove once upload is confirmed working.
 export async function GET(): Promise<NextResponse> {
@@ -19,28 +14,32 @@ export async function GET(): Promise<NextResponse> {
   });
 }
 
-export async function POST(request: Request): Promise<NextResponse> {
-  const body = (await request.json()) as HandleUploadBody;
+// Server-side upload to Vercel Blob. The client downscales images first so
+// they fit under the 4.5MB serverless body limit. addRandomSuffix avoids
+// filename collisions (and handles unicode/space filenames safely).
+export async function POST(req: Request): Promise<NextResponse> {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
+  }
+
+  const form = await req.formData();
+  const file = form.get("file") as File | null;
+  if (!file) {
+    return NextResponse.json({ error: "파일이 없습니다." }, { status: 400 });
+  }
 
   try {
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      onBeforeGenerateToken: async () => {
-        // Only the signed-in admin may obtain an upload token.
-        const session = await getServerSession(authOptions);
-        if (!session) throw new Error("로그인이 필요합니다.");
-        return { addRandomSuffix: true };
-      },
-      // Required by the API. Nothing to persist here — the returned blob URL
-      // is saved with the post when the form is submitted.
-      onUploadCompleted: async () => {},
+    const blob = await put(file.name, file, {
+      access: "public",
+      addRandomSuffix: true,
     });
-    return NextResponse.json(jsonResponse);
-  } catch (error) {
+    return NextResponse.json({ url: blob.url });
+  } catch (err) {
+    console.error("Upload failed:", err);
     return NextResponse.json(
-      { error: (error as Error).message || "업로드에 실패했어요." },
-      { status: 400 }
+      { error: (err as Error).message || "업로드에 실패했어요." },
+      { status: 500 }
     );
   }
 }
