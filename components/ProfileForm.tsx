@@ -5,12 +5,12 @@ import {
   ProfileSection,
   ProfileSectionType,
   SkillItem,
+  SKILL_LABELS,
   asSections,
   emptySection,
 } from "@/lib/profile";
 import { downscaleImage } from "@/lib/downscaleImage";
 import Markdown from "@/components/Markdown";
-import SkillGauge from "@/components/SkillGauge";
 
 const SECTION_OPTIONS: { type: ProfileSectionType; label: string }[] = [
   { type: "text", label: "텍스트" },
@@ -285,7 +285,7 @@ function SkillsEditor({
   return (
     <div className="space-y-2">
       {items.map((it, i) => (
-        <div key={i} className="flex items-center gap-3">
+        <div key={i} className="flex flex-wrap items-center gap-2">
           <input
             value={it.name}
             onChange={(e) =>
@@ -296,14 +296,12 @@ function SkillsEditor({
               )
             }
             placeholder="프로그램/능력"
-            className="flex-1 rounded-lg border border-line bg-surface px-3 py-2 font-body text-sm text-text"
+            className="min-w-[120px] flex-1 rounded-lg border border-line bg-surface px-3 py-2 font-body text-sm text-text"
           />
-          <SkillGauge
+          <LevelPicker
             level={it.level}
             onChange={(level) =>
-              onChange(
-                items.map((x, idx) => (idx === i ? { ...x, level } : x))
-              )
+              onChange(items.map((x, idx) => (idx === i ? { ...x, level } : x)))
             }
           />
           <button
@@ -323,6 +321,37 @@ function SkillsEditor({
       >
         + 능력 추가
       </button>
+    </div>
+  );
+}
+
+function LevelPicker({
+  level,
+  onChange,
+}: {
+  level: number;
+  onChange: (level: number) => void;
+}) {
+  return (
+    <div className="flex gap-1">
+      {SKILL_LABELS.map((label, i) => {
+        const lv = i + 1;
+        const active = lv === level;
+        return (
+          <button
+            key={lv}
+            type="button"
+            onClick={() => onChange(lv)}
+            className={`rounded-md px-2 py-1.5 font-mono text-xs transition-colors ${
+              active
+                ? "bg-gold text-bg"
+                : "bg-surface-hover text-text-muted hover:text-gold"
+            }`}
+          >
+            {label}
+          </button>
+        );
+      })}
     </div>
   );
 }

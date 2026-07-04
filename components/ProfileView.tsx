@@ -71,10 +71,12 @@ function SectionBlock({ section }: { section: ProfileSection }) {
               key={i}
               className="flex items-center justify-between gap-4 border-b border-line pb-3"
             >
-              <span className="font-body text-sm text-text-muted">
+              <span className="min-w-0 break-words font-body text-sm text-text-muted">
                 {it.name}
               </span>
-              <SkillGauge level={it.level} />
+              <span className="shrink-0">
+                <SkillGauge level={it.level} />
+              </span>
             </li>
           ))}
         </ul>

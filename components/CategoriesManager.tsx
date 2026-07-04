@@ -66,6 +66,19 @@ export default function CategoriesManager() {
     load();
   }
 
+  async function move(i: number, dir: -1 | 1) {
+    const j = i + dir;
+    if (j < 0 || j >= categories.length) return;
+    const next = [...categories];
+    [next[i], next[j]] = [next[j], next[i]];
+    setCategories(next); // optimistic
+    await fetch("/api/categories/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slugs: next.map((c) => c.slug) }),
+    });
+  }
+
   return (
     <section className="mx-auto min-h-screen max-w-xl px-6 pb-24 pt-32">
       <p className="font-mono text-xs uppercase tracking-widest text-gold">
@@ -106,23 +119,43 @@ export default function CategoriesManager() {
             아직 카테고리가 없어요.
           </p>
         )}
-        {categories.map((c) => (
+        {categories.map((c, i) => (
           <li
             key={c.id}
             className="flex items-center justify-between rounded-lg border border-line bg-surface px-4 py-3"
           >
-            <div>
+            <div className="min-w-0">
               <span className="font-body text-text">{c.label}</span>
               <span className="ml-2 font-mono text-xs text-text-muted">
                 /{c.slug}
               </span>
             </div>
-            <button
-              onClick={() => handleDelete(c.slug)}
-              className="font-mono text-xs uppercase tracking-widest text-text-muted transition-colors hover:text-gold"
-            >
-              삭제
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                aria-label="위로"
+                disabled={i === 0}
+                onClick={() => move(i, -1)}
+                className="flex h-7 w-7 items-center justify-center rounded-md font-mono text-xs text-text-muted transition-colors hover:bg-surface-hover hover:text-gold disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                aria-label="아래로"
+                disabled={i === categories.length - 1}
+                onClick={() => move(i, 1)}
+                className="flex h-7 w-7 items-center justify-center rounded-md font-mono text-xs text-text-muted transition-colors hover:bg-surface-hover hover:text-gold disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                ↓
+              </button>
+              <button
+                onClick={() => handleDelete(c.slug)}
+                className="ml-2 font-mono text-xs uppercase tracking-widest text-text-muted transition-colors hover:text-gold"
+              >
+                삭제
+              </button>
+            </div>
           </li>
         ))}
       </ul>

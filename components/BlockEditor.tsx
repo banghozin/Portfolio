@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Block, BlockType, youtubeEmbedId } from "@/lib/blocks";
 import { downscaleImage } from "@/lib/downscaleImage";
 import Markdown from "@/components/Markdown";
@@ -56,27 +56,74 @@ export default function BlockEditor({
     setAddOpen(false);
   }
 
-  async function uploadImage(i: number, file: File) {
-    setUploadingAt(i);
-    try {
-      const resized = await downscaleImage(file);
-      const form = new FormData();
-      form.append("file", resized);
-      const res = await fetch("/api/upload", { method: "POST", body: form });
-      if (!res.ok) {
-        const { error } = await res
-          .json()
-          .catch(() => ({ error: res.statusText }));
-        throw new Error(error || "업로드 실패");
-      }
-      const { url } = await res.json();
-      update(i, { url } as Partial<Block>);
-    } catch (err) {
-      alert(`업로드 실패: ${(err as Error).message}`);
-    } finally {
-      setUploadingAt(null);
+  async function uploadFile(file: File): Promise<string> {
+    const resized = await downscaleImage(file);
+    const form = new FormData();
+    form.append("file", resized);
+    const res = await fetch("/api/upload", { method: "POST", body: form });
+    if (!res.ok) {
+      const { error } = await res
+        .json()
+        .catch(() => ({ error: res.statusText }));
+      throw new Error(error || "업로드 실패");
     }
+    const { url } = await res.json();
+    return url as string;
   }
+
+  // Upload one or more files into image block `i`: the first fills this block,
+  // the rest are inserted as new image blocks right after it.
+  async function uploadImages(i: number, files: File[]) {
+    setUploadingAt(i);
+    const urls: string[] = [];
+    for (const f of files) {
+      try {
+        urls.push(await uploadFile(f));
+      } catch (err) {
+        alert(`업로드 실패: ${(err as Error).message}`);
+      }
+    }
+    setUploadingAt(null);
+    if (!urls.length) return;
+    onChange(
+      blocks.flatMap((b, idx) =>
+        idx === i ? urls.map((url) => ({ type: "image", url } as Block)) : [b]
+      )
+    );
+  }
+
+  // Paste an image anywhere on the page (Ctrl/Cmd+V) to append image blocks.
+  useEffect(() => {
+    async function onPaste(e: ClipboardEvent) {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      const files: File[] = [];
+      for (const it of Array.from(items)) {
+        if (it.type.startsWith("image/")) {
+          const f = it.getAsFile();
+          if (f) files.push(f);
+        }
+      }
+      if (!files.length) return;
+      e.preventDefault();
+      const urls: string[] = [];
+      for (const f of files) {
+        try {
+          urls.push(await uploadFile(f));
+        } catch (err) {
+          alert(`업로드 실패: ${(err as Error).message}`);
+        }
+      }
+      if (urls.length)
+        onChange([
+          ...blocks,
+          ...urls.map((url) => ({ type: "image", url } as Block)),
+        ]);
+    }
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blocks, onChange]);
 
   return (
     <div className="space-y-4">
@@ -143,12 +190,16 @@ export default function BlockEditor({
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) uploadImage(i, f);
+                  const fs = e.target.files;
+                  if (fs && fs.length) uploadImages(i, Array.from(fs));
                 }}
                 className="w-full font-body text-xs text-text-muted"
               />
+              <p className="font-mono text-[10px] text-text-muted">
+                여러 장 선택 가능 · 이미지 복사 후 Ctrl+V로 붙여넣기도 돼요
+              </p>
               {uploadingAt === i && (
                 <p className="font-mono text-xs text-text-muted">
                   업로드 중...

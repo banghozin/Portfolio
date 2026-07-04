@@ -1,18 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
-const CATEGORIES = [
-  { slug: "design", label: "Design" },
-  { slug: "video", label: "Video" },
-  { slug: "ai", label: "AI" },
-  { slug: "web", label: "Web" },
-];
+type NavCategory = { slug: string; label: string };
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [categories, setCategories] = useState<NavCategory[]>([]);
+
+  // Categories come from the DB in their saved order (order asc).
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data: NavCategory[]) => setCategories(data))
+      .catch(() => {});
+  }, []);
 
   return (
     <header className="fixed top-0 z-50 w-full border-b border-line bg-bg/70 backdrop-blur-md">
@@ -26,7 +30,7 @@ export default function Navbar() {
 
         {/* desktop nav */}
         <nav className="hidden gap-8 md:flex">
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <NavLink key={c.slug} href={`/category/${c.slug}`}>
               {c.label}
             </NavLink>
@@ -76,7 +80,7 @@ export default function Navbar() {
             className="overflow-hidden border-t border-line md:hidden"
           >
             <div className="flex flex-col gap-1 px-6 py-4">
-              {CATEGORIES.map((c) => (
+              {categories.map((c) => (
                 <Link
                   key={c.slug}
                   href={`/category/${c.slug}`}

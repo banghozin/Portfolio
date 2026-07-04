@@ -40,7 +40,7 @@ export default function PostBlocks({
   }, [openIndex, imageUrls.length]);
 
   return (
-    <div className="mt-10 space-y-8">
+    <div className="mt-12 space-y-12">
       {blocks.map((b, i) => {
         if (b.type === "text") {
           return <Markdown key={i}>{b.value}</Markdown>;
@@ -80,12 +80,9 @@ export default function PostBlocks({
         }
         if (b.type === "link") {
           return (
-            <LinkCard
-              key={i}
-              url={b.url}
-              title={b.title}
-              subtitle={b.subtitle}
-            />
+            <div key={i} className="text-center">
+              <LinkCard url={b.url} title={b.title} subtitle={b.subtitle} />
+            </div>
           );
         }
         return null;

@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 // site palette so headings/bold/lists/links look right in posts and preview.
 export default function Markdown({ children }: { children: string }) {
   return (
-    <div className="space-y-4 font-body text-base leading-relaxed text-text-muted">
+    <div className="space-y-4 break-words font-body text-base leading-relaxed text-text-muted">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
