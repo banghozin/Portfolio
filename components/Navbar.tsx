@@ -30,12 +30,12 @@ export default function Navbar() {
 
         {/* desktop nav */}
         <nav className="hidden gap-8 md:flex">
+          <NavLink href="/profile">Profile</NavLink>
           {categories.map((c) => (
             <NavLink key={c.slug} href={`/category/${c.slug}`}>
               {c.label}
             </NavLink>
           ))}
-          <NavLink href="/profile">Profile</NavLink>
         </nav>
 
         <div className="hidden md:block">
@@ -80,6 +80,13 @@ export default function Navbar() {
             className="overflow-hidden border-t border-line md:hidden"
           >
             <div className="flex flex-col gap-1 px-6 py-4">
+              <Link
+                href="/profile"
+                onClick={() => setOpen(false)}
+                className="py-2 font-body text-base text-text"
+              >
+                Profile
+              </Link>
               {categories.map((c) => (
                 <Link
                   key={c.slug}
@@ -90,13 +97,6 @@ export default function Navbar() {
                   {c.label}
                 </Link>
               ))}
-              <Link
-                href="/profile"
-                onClick={() => setOpen(false)}
-                className="py-2 font-body text-base text-text"
-              >
-                Profile
-              </Link>
               <Link
                 href="/admin"
                 onClick={() => setOpen(false)}

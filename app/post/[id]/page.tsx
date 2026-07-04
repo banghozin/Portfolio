@@ -73,7 +73,7 @@ export default async function PostPage({
         <Link
           href={`/post/${prevId}`}
           aria-label="이전 작품"
-          className="fixed left-2 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/80 font-mono text-xl text-text-muted backdrop-blur-sm transition-colors hover:border-gold hover:text-gold md:left-6"
+          className="fixed left-2 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gold/50 bg-surface font-mono text-xl text-gold shadow-lg backdrop-blur-sm transition-all hover:bg-gold hover:text-bg md:left-6"
         >
           ‹
         </Link>
@@ -82,7 +82,7 @@ export default async function PostPage({
         <Link
           href={`/post/${nextId}`}
           aria-label="다음 작품"
-          className="fixed right-2 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/80 font-mono text-xl text-text-muted backdrop-blur-sm transition-colors hover:border-gold hover:text-gold md:right-6"
+          className="fixed right-2 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gold/50 bg-surface font-mono text-xl text-gold shadow-lg backdrop-blur-sm transition-all hover:bg-gold hover:text-bg md:right-6"
         >
           ›
         </Link>

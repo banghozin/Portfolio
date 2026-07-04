@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import ConstellationBackground from "@/components/ConstellationBackground";
 import CategoryCard from "@/components/CategoryCard";
@@ -64,6 +65,15 @@ export default async function HomePage() {
             {settings.heroSubtitle}
           </p>
         )}
+
+        <div className="mt-8">
+          <Link
+            href="/profile"
+            className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-5 py-3 font-body text-sm text-text transition-colors hover:border-gold hover:text-gold"
+          >
+            프로필 보기 <span className="text-gold">→</span>
+          </Link>
+        </div>
 
         {categories.length === 0 ? (
           <p className="mt-16 font-body text-text-muted">

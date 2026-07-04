@@ -13,12 +13,12 @@ export default function SkillGauge({
   const interactive = !!onChange;
 
   return (
-    <span className="inline-flex items-center gap-2">
+    <span className="inline-flex items-center gap-2.5">
       <span className="flex gap-1">
         {Array.from({ length: 5 }).map((_, i) => {
           const seg = (
             <span
-              className={`h-1.5 w-5 rounded-full ${
+              className={`block h-2.5 w-6 rounded-sm ${
                 i < lv ? "bg-gold" : "bg-surface-hover"
               }`}
             />
@@ -38,7 +38,7 @@ export default function SkillGauge({
           );
         })}
       </span>
-      <span className="font-mono text-xs text-text-muted">{skillLabel(lv)}</span>
+      <span className="w-8 font-mono text-xs text-gold">{skillLabel(lv)}</span>
     </span>
   );
 }

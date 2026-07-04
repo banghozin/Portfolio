@@ -42,9 +42,11 @@ export default function ProfileView({
             </div>
           )}
           <div className={imageUrl ? "lg:col-span-9" : "lg:col-span-12"}>
-            <div className="gap-x-10 sm:columns-2 [&>*]:mb-10 [&>*]:break-inside-avoid">
+            <div className="grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2">
               {sections.map((s, i) => (
-                <SectionBlock key={i} section={s} />
+                <div key={i} className="min-w-0">
+                  <SectionBlock section={s} />
+                </div>
               ))}
             </div>
           </div>
@@ -69,7 +71,7 @@ function SectionBlock({ section }: { section: ProfileSection }) {
           {section.items.map((it, i) => (
             <li
               key={i}
-              className="flex items-center justify-between gap-4 border-b border-line pb-3"
+              className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line pb-3"
             >
               <span className="min-w-0 break-words font-body text-sm text-text-muted">
                 {it.name}
