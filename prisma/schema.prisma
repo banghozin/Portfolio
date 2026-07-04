@@ -20,12 +20,21 @@ model Category {
 model Post {
   id         String   @id @default(cuid())
   title      String
-  content    String
-  images     String[] // uploaded image URLs
-  thumbnail  String? // chosen from `images`
-  youtubeUrl String?
+  content    String // plain-text join of text blocks (for excerpts/legacy)
+  blocks     Json? // ordered content blocks: text | image | video | link
+  images     String[] // legacy: uploaded image URLs
+  thumbnail  String? // used on category cards (first image block)
+  youtubeUrl String? // legacy: single youtube embed
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+// Single-row site configuration, editable from /admin/settings.
+model SiteSettings {
+  id           String   @id @default("site")
+  heroTitle    String   @default("")
+  heroSubtitle String   @default("")
+  updatedAt    DateTime @updatedAt
 }

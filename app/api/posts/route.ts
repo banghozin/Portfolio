@@ -3,6 +3,7 @@ import { revalidateTag } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { asBlocks, plainTextFromBlocks, firstImageUrl } from "@/lib/blocks";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -24,17 +25,19 @@ export async function POST(req: Request) {
 
   const body = await req.json();
 
-  if (!body.title || !body.content || !body.category) {
+  if (!body.title || !body.category) {
     return NextResponse.json({ error: "missing fields" }, { status: 400 });
   }
+
+  const blocks = asBlocks(body.blocks) ?? [];
 
   const post = await prisma.post.create({
     data: {
       title: body.title,
-      content: body.content,
-      images: body.images ?? [],
-      thumbnail: body.thumbnail ?? null,
-      youtubeUrl: body.youtubeUrl || null,
+      content: plainTextFromBlocks(blocks),
+      blocks,
+      thumbnail: firstImageUrl(blocks),
+      images: [],
       category: { connect: { slug: body.category } },
     },
   });

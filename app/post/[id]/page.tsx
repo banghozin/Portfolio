@@ -5,6 +5,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import PostGallery from "@/components/PostGallery";
+import PostBlocks from "@/components/PostBlocks";
+import { asBlocks } from "@/lib/blocks";
 
 // Cached per id; busted on any post change via revalidateTag("posts").
 const getPost = unstable_cache(
@@ -18,6 +20,7 @@ const getPost = unstable_cache(
         post.createdAt.getMonth() + 1
       ).padStart(2, "0")}`,
       content: post.content,
+      blocks: asBlocks(post.blocks),
       images: post.images,
       youtubeUrl: post.youtubeUrl ?? "",
     };
@@ -61,23 +64,31 @@ export default async function PostPage({
         </Link>
       )}
 
-      {embedId && (
-        <div className="relative mt-10 aspect-video w-full overflow-hidden rounded-xl border border-line">
-          <iframe
-            src={`https://www.youtube.com/embed/${embedId}`}
-            title={post.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="absolute inset-0 h-full w-full"
-          />
-        </div>
+      {post.blocks ? (
+        // New block-based posts.
+        <PostBlocks blocks={post.blocks} title={post.title} />
+      ) : (
+        // Legacy posts: single youtube embed + text + image gallery.
+        <>
+          {embedId && (
+            <div className="relative mt-10 aspect-video w-full overflow-hidden rounded-xl border border-line">
+              <iframe
+                src={`https://www.youtube.com/embed/${embedId}`}
+                title={post.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 h-full w-full"
+              />
+            </div>
+          )}
+
+          <div className="mt-10 space-y-6 font-body text-base leading-relaxed text-text-muted">
+            <p className="whitespace-pre-wrap">{post.content}</p>
+          </div>
+
+          <PostGallery images={post.images} title={post.title} />
+        </>
       )}
-
-      <div className="mt-10 space-y-6 font-body text-base leading-relaxed text-text-muted">
-        <p className="whitespace-pre-wrap">{post.content}</p>
-      </div>
-
-      <PostGallery images={post.images} title={post.title} />
     </article>
   );
 }

@@ -16,7 +16,7 @@ export default async function AdminPage() {
         <h1 className="mt-3 font-display text-3xl text-text">
           {session.user?.name}님, 환영합니다.
         </h1>
-        <div className="mt-8 flex gap-3">
+        <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href="/admin/write"
             className="rounded-lg bg-gold px-5 py-3 font-body text-sm font-medium text-bg transition-transform hover:-translate-y-0.5"
@@ -28,6 +28,12 @@ export default async function AdminPage() {
             className="rounded-lg border border-line px-5 py-3 font-body text-sm text-text transition-colors hover:bg-surface-hover"
           >
             카테고리 관리
+          </Link>
+          <Link
+            href="/admin/settings"
+            className="rounded-lg border border-line px-5 py-3 font-body text-sm text-text transition-colors hover:bg-surface-hover"
+          >
+            홈 문구
           </Link>
           <SignOutButton />
         </div>

@@ -3,6 +3,7 @@ import { revalidateTag } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { asBlocks, plainTextFromBlocks, firstImageUrl } from "@/lib/blocks";
 
 export async function GET(
   _req: Request,
@@ -28,14 +29,14 @@ export async function PATCH(
   }
 
   const body = await req.json();
+  const blocks = asBlocks(body.blocks) ?? [];
   const post = await prisma.post.update({
     where: { id: params.id },
     data: {
       title: body.title,
-      content: body.content,
-      images: body.images,
-      thumbnail: body.thumbnail,
-      youtubeUrl: body.youtubeUrl || null,
+      content: plainTextFromBlocks(blocks),
+      blocks,
+      thumbnail: firstImageUrl(blocks),
       ...(body.category && { category: { connect: { slug: body.category } } }),
     },
   });

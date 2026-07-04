@@ -30,8 +30,24 @@ const getCategories = unstable_cache(
   { tags: ["categories"] }
 );
 
+// Hero title/subtitle, editable at /admin/settings. Cached, busted on save.
+const getSettings = unstable_cache(
+  async () => {
+    const s = await prisma.siteSettings.findUnique({ where: { id: "site" } });
+    return {
+      heroTitle: s?.heroTitle ?? "",
+      heroSubtitle: s?.heroSubtitle ?? "",
+    };
+  },
+  ["home-settings"],
+  { tags: ["settings"] }
+);
+
 export default async function HomePage() {
-  const categories = await getCategories();
+  const [categories, settings] = await Promise.all([
+    getCategories(),
+    getSettings(),
+  ]);
 
   return (
     <>
@@ -40,15 +56,14 @@ export default async function HomePage() {
         <p className="font-mono text-xs uppercase tracking-[0.3em] text-gold">
           Portfolio
         </p>
-        <h1 className="mt-4 max-w-3xl font-display text-5xl italic leading-tight text-text md:text-7xl">
-          네 갈래의 별자리를
-          <br />
-          <span className="not-italic text-gold">한 사람이</span> 그립니다.
+        <h1 className="mt-4 break-keep font-display text-4xl leading-tight text-text sm:text-6xl md:text-7xl">
+          {settings.heroTitle || "포트폴리오 사이트"}
         </h1>
-        <p className="mt-6 max-w-xl font-body text-base text-text-muted md:text-lg">
-          디자인, 영상, AI, 웹 — 각각의 작업물이 모여 하나의 궤적을
-          이룹니다. 별자리를 골라 들어가 보세요.
-        </p>
+        {settings.heroSubtitle && (
+          <p className="mt-4 break-keep font-body text-base text-text-muted sm:text-lg">
+            {settings.heroSubtitle}
+          </p>
+        )}
 
         {categories.length === 0 ? (
           <p className="mt-16 font-body text-text-muted">
