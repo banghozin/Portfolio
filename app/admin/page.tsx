@@ -35,6 +35,12 @@ export default async function AdminPage() {
           >
             홈 문구
           </Link>
+          <Link
+            href="/admin/profile"
+            className="rounded-lg border border-line px-5 py-3 font-body text-sm text-text transition-colors hover:bg-surface-hover"
+          >
+            프로필 편집
+          </Link>
           <SignOutButton />
         </div>
       </section>

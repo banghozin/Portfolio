@@ -38,3 +38,12 @@ model SiteSettings {
   heroSubtitle String   @default("")
   updatedAt    DateTime @updatedAt
 }
+
+// Single-row profile/resume, editable from /admin/profile.
+model Profile {
+  id        String   @id @default("profile")
+  imageUrl  String   @default("")
+  headline  String   @default("")
+  sections  Json? // ordered ProfileSection[]: text | skills
+  updatedAt DateTime @updatedAt
+}

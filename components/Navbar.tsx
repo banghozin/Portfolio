@@ -31,6 +31,7 @@ export default function Navbar() {
               {c.label}
             </NavLink>
           ))}
+          <NavLink href="/profile">Profile</NavLink>
         </nav>
 
         <div className="hidden md:block">
@@ -85,6 +86,13 @@ export default function Navbar() {
                   {c.label}
                 </Link>
               ))}
+              <Link
+                href="/profile"
+                onClick={() => setOpen(false)}
+                className="py-2 font-body text-base text-text"
+              >
+                Profile
+              </Link>
               <Link
                 href="/admin"
                 onClick={() => setOpen(false)}
